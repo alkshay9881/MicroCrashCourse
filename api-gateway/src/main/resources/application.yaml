@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: API-GATEWAY-SERVICE
+  profiles:
+     active: dev
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: QUIZ-SERVICE
+              uri: lb://QUIZ-SERVICE
+              predicates:
+                - Path=/api/quizzes/**
+            - id: QUESTIONS-SERVICE
+              uri: lb://QUESTIONS-SERVICE
+              predicates:
+                - Path=/api/questions/**
+
