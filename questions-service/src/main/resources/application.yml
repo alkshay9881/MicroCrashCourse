@@ -2,11 +2,11 @@ spring:
   application:
     name: QUESTIONS-SERVICE
   profiles:
-      active: dev
+      active: local
   datasource:
     url: jdbc:mysql://localhost:3306/testdb
-    username: akshay
-    password: Akshay@123
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -16,7 +16,12 @@ spring:
       hibernate:
         format_sql: true
 
+  config:
+    import: "optional:configserver:http://localhost:8087"
+
 eureka:
   client:
     service-url:
       default-zone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true

@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: CONFIG-SERVER
+    profiles:
+      active: local
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/alkshay9881/MicroCrashCourse-config
+          default-label: main
+          clone-on-start: true
+          timeout: 10
+
+server:
+  port: 8087
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG
+    com.netflix.discovery: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
