@@ -31,3 +31,9 @@ logging:
   level:
     org.springframework.cloud.loadbalancer: DEBUG
     org.springframework.cloud.openfeign: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
