@@ -23,4 +23,19 @@ public class FallbackController {
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body("Question Service is currently unavailable");
     }
+
+    @GetMapping("/quizRateLimit")
+    public ResponseEntity<String> quizRateLimitFallback() {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body("Quiz service rate limit exceeded. Try again later.");
+
+    }
+    @GetMapping("/questionRateLimit")
+    public ResponseEntity<String> questionRateLimitFallback() {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body("Qustion service rate limit exceeded. Try again later.");
+
+    }
+
+
 }

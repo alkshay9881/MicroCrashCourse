@@ -1,40 +1,35 @@
 spring:
   application:
     name: API-GATEWAY-SERVICE
+
   profiles:
     active: local
 
   cloud:
     gateway:
-      server:
-        webflux:
-          routes:
+      routes:
 
-            - id: quiz-service
-              uri: lb://QUIZ-SERVICE
-              predicates:
-                - Path=/api/quizzes/**
-              filters:
-                - name: CircuitBreaker
-                  args:
-                    name: quizServiceCB
-                    fallbackuri: forward:/fallback/quiz
+        # -------- QUIZ SERVICE --------
+        - id: quiz-service
+          uri: lb://QUIZ-SERVICE
+          predicates:
+            - Path=/api/quizzes/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: quizServiceCB
+                fallbackUri: forward:/fallback/quiz
 
-            - id: question-service
-              uri: lb://QUESTIONS-SERVICE
-              predicates:
-                - Path=/api/questions/**
-              filters:
-                - name: CircuitBreaker
-                  args:
-                    name: questionServiceCB
-                    fallbackuri: forward:/fallback/question
+        # -------- QUESTION SERVICE --------
+        - id: question-service
+          uri: lb://QUESTIONS-SERVICE
+          predicates:
+            - Path=/api/questions/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: questionServiceCB
+                fallbackUri: forward:/fallback/question
 
   config:
     import: "optional:configserver:http://localhost:8087"
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,circuitbreakers,metrics

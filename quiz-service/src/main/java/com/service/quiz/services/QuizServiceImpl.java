@@ -4,15 +4,22 @@ import com.service.quiz.External.QuestionsFeignService;
 import com.service.quiz.entities.Question;
 import com.service.quiz.entities.Quiz;
 import com.service.quiz.repositories.QuizRepo;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 
 @Service
-public class QuizServiceImpl implements QuizService{
+public class QuizServiceImpl implements QuizService {
 
     private final QuizRepo quizRepository;
 
@@ -27,11 +34,12 @@ public class QuizServiceImpl implements QuizService{
 
     @Override
     public Quiz saveQuiz(Quiz quiz) {
-       return quizRepository.save(quiz);
+        return quizRepository.save(quiz);
     }
 
 
-
+    @CircuitBreaker(name = "questionServiceCB", fallbackMethod = "getAllQuizzesFallback")
+   // @RateLimiter(name = "quizServiceLimiter" , fallbackMethod = "getAllQuizzesFallbackRate")
     public List<Quiz> getAllQuizzes() {
         List<Quiz> all = quizRepository.findAll();
         return all.stream().map(quiz -> {
@@ -43,8 +51,10 @@ public class QuizServiceImpl implements QuizService{
 
     }
 
-    //call
 
+
+
+    //call
 
 
     public Optional<Quiz> getQuizById(Integer quizId) {
@@ -71,4 +81,17 @@ public class QuizServiceImpl implements QuizService{
     public List<Quiz> searchQuiz(String title) {
         return List.of();
     }
+
+    public List<Quiz> getAllQuizzesFallback(Throwable ex) {
+        List<Quiz> all = quizRepository.findAll();
+        all.forEach(quiz -> quiz.setQuestionList(Collections.emptyList()));
+        return all;
+    }
+
+    public List<Quiz> getAllQuizzesFallbackRate(RequestNotPermitted ex) {
+        List<Quiz> all = quizRepository.findAll();
+        all.forEach(quiz -> quiz.setQuestionList(Collections.emptyList()));
+        return all;
+    }
+
 }

@@ -37,3 +37,11 @@ management:
     web:
       exposure:
         include: health,info
+
+resilience4j:
+  ratelimiter:
+    instances:
+      quizServiceLimiter:
+        limit-for-period: 2
+        limit-refresh-period: 4s
+        timeout-duration: 0s
