@@ -1,75 +1,108 @@
-version: "3.8"
+services:
 
+  # ------------------ MYSQL ------------------
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+    ports:
+      - "3306:3306"
+    networks:
+      - microservices-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ------------------ EUREKA SERVER ------------------
+  service-registry:
+    build: ./service-registry-app
+    container_name: service-registry-container
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=uat
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # ------------------ CONFIG SERVER ------------------
+  config-server:
+    build: ./config-server
+    container_name: config-server-container
+    ports:
+      - "8087:8087"
+    networks:
+      - microservices-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=uat
+    depends_on:
+      service-registry:
+        condition: service_started
+
+  # ------------------ QUIZ SERVICE ------------------
+  quiz-service:
+    build: ./quiz-service
+    container_name: quiz-service-container
+    ports:
+      - "8081:8081"
+    networks:
+      - microservices-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=uat
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
+      config-server:
+        condition: service_started
+
+  # ------------------ QUESTION SERVICE ------------------
+  question-service:
+    build: ./questions-service
+    container_name: question-service-container
+    ports:
+      - "8082:8082"
+    networks:
+      - microservices-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=uat
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
+      config-server:
+        condition: service_started
+
+  # ------------------ API GATEWAY ------------------
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway-container
+    ports:
+      - "9090:9090"
+    networks:
+      - microservices-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=uat
+    depends_on:
+      quiz-service:
+        condition: service_started
+      question-service:
+        condition: service_started
+      service-registry:
+        condition: service_started
+      config-server:
+        condition: service_started
+
+# ------------------ NETWORK ------------------
 networks:
   microservices-net:
     driver: bridge
-
-services:
-
-  service-registry:
-    image: service-registry:1.0.0
-    container_name: service-registry
-    ports:
-      - "8761:8761"
-    environment:
-      - SPRING_PROFILES_ACTIVE=uat
-    networks:
-      - microservices-net
-    restart: unless-stopped
-
-  config-server:
-    image: config-server:1.0.0
-    container_name: config-server
-    ports:
-      - "8087:8087"
-    environment:
-      - SPRING_PROFILES_ACTIVE=uat
-    depends_on:
-      - service-registry
-    networks:
-      - microservices-net
-    restart: unless-stopped
-
-  quiz-service:
-    image: quiz-service:1.0.0
-    container_name: quiz-service
-    ports:
-      - "8081:8081"
-    environment:
-      - SPRING_PROFILES_ACTIVE=uat
-    depends_on:
-      - service-registry
-      - config-server
-    networks:
-      - microservices-net
-    restart: unless-stopped
-
-  question-service:
-    image: question-service:1.0.0
-    container_name: question-service
-    ports:
-      - "8082:8082"
-    environment:
-      - SPRING_PROFILES_ACTIVE=uat
-    depends_on:
-      - service-registry
-      - config-server
-    networks:
-      - microservices-net
-    restart: unless-stopped
-
-  api-gateway:
-    image: api-gateway:1.0.0
-    container_name: api-gateway
-    ports:
-      - "9090:9090"
-    environment:
-      - SPRING_PROFILES_ACTIVE=uat
-    depends_on:
-      - service-registry
-      - config-server
-      - quiz-service
-      - question-service
-    networks:
-      - microservices-net
-    restart: unless-stopped
