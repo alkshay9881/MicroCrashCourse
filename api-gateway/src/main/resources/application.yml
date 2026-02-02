@@ -1,9 +1,9 @@
+server:
+  port: 9090
+
 spring:
   application:
     name: API-GATEWAY-SERVICE
-
-  profiles:
-    active: local
 
   cloud:
     gateway:
@@ -21,7 +21,7 @@ spring:
                 fallbackUri: forward:/fallback/quiz
 
         # -------- QUESTION SERVICE --------
-        - id: question-service
+        - id: questions-service
           uri: lb://QUESTIONS-SERVICE
           predicates:
             - Path=/api/questions/**
@@ -31,5 +31,22 @@ spring:
                 name: questionServiceCB
                 fallbackUri: forward:/fallback/question
 
-  config:
-    import: "optional:configserver:http://localhost:8087"
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.loadbalancer: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+
+eureka:
+  instance:
+    prefer-ip-address: true
+
+
+
+
+
+
+
+
+
+
