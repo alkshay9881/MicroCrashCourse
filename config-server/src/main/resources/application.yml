@@ -12,7 +12,8 @@ spring:
           uri: https://github.com/alkshay9881/MicroCrashCourse-config
           default-label: main
           clone-on-start: true
-          timeout: 10
+          timeout: 20
+          skip-ssl-validation: true
 
 
 

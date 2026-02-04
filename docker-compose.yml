@@ -92,15 +92,19 @@ services:
       - microservices-net
     environment:
       - SPRING_PROFILES_ACTIVE=uat
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=mobile-app
     depends_on:
       quiz-service:
-        condition: service_started
+        condition: service_healthy
       question-service:
-        condition: service_started
+        condition: service_healthy
       service-registry:
-        condition: service_started
+        condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
 
 # ------------------ NETWORK ------------------
 networks:
