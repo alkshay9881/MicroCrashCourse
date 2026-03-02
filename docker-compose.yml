@@ -9,7 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: testdb
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - microservices-net
     healthcheck:
@@ -103,10 +103,46 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      keycloak:
-        condition: service_healthy
+#      keycloak:
+#        condition: service_healthy
+
+
+  # ------------------ zookeeper ------------------
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper-container
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - microservices-net
+
+  # ------------------ kafka ------------------
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-container
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    networks:
+      - microservices-net
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-container:2181
+
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-container:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
 
 # ------------------ NETWORK ------------------
 networks:
   microservices-net:
-    driver: bridge
+    external: true
